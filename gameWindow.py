@@ -43,24 +43,51 @@ spaceshipImg = pygame.image.load('c:/Users/eseujgo/Desktop/Game/racecar.png').co
 # This is a function that will display our spaceship at a x and y position
 def spaceShip(x,y):
     gameDisplay.blit(spaceshipImg, (x,y)) 
-    
+
+# This is the intial positioning of the sprite(the name of an image for 2D games)    
 x = (displayWidth) * 0.45
 y = (displayHeight) * 0.5 
 
+# This the distance traveled and the speed 
+xDistanceToMove = 0
+shipSpeed = 0 
+
 while not crashed:
     
+    # Here we are checking if someone pressed the close button on our game window to quit
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             crashed = True
             
+    # Here we are checking to see if any buttons were pressed on keyboard to move the spaceship
+    # We do this by changing the value of the xDistanceToMove and telling the ship to go there
+    
+    # Checking the down key
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_LEFT:
+            xDistanceToMove = -5
+        elif event.key == pygame.K_RIGHT:
+            xDistanceToMove = 5
+            
+    # Checking the left and right keys 
+    if event.type == pygame.KEYUP:
+        if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+            xDistanceToMove = 0
+    
+    # Here we are changing the x variable to the new x position so we can tell the spaceship to move there
+    x = x + xDistanceToMove
+    
+    # Here we are changing the background of the game and the spaceship at its current location        
     gameDisplay.fill(white)
     spaceShip(x,y)
-        
+    
+    # Here we are showing the changes to our game screen        
     pygame.display.update()
     clock.tick(60)
 
 # If we exit the loop means program ended then we close the game library
+print('Goodbye') 
 pygame.quit()
 quit()
-print('Goodbye') 
+
 
