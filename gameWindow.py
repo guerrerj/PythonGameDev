@@ -1,5 +1,6 @@
 import pygame
 import os 
+import random
 from pathlib import Path
 
 
@@ -27,25 +28,152 @@ gameDisplay = pygame.display.set_mode((displayWidth, displayHeight))
 # We are giving our screen a title 
 pygame.display.set_caption('Fast and Deivi')
 
+# Crashing sound
+crashSound = pygame.mixer.Sound("crash.wav");
+
 # Defining some colors for use in the game
 black = (0,0,0)
 white = (255, 255, 255)  # these represent colors for red blue green which can can take values from 0 to 255
-red = (255, 0, 0)
+red = (200, 0, 0)
+brightRed = (255, 0, 0)
+green = (0, 200, 0)
+brightGreen = (0, 255, 0)
+blockColor = (50, 200, 250) 
 
 # Clock used to keep track of the game events
 clock = pygame.time.Clock()
 
-# Lets load an image for our game 
-spaceshipImg = pygame.image.load(str(os.getcwd()) + '/racecar.png').convert()
+# Lets load an image for our game spaceship and for the game icon
+spaceshipImg = pygame.image.load(str(os.getcwd()) + '/racespaceship.png')
+gameIcon = pygame.image.load(str(os.getcwd()) + '/spaceshipIcon.jpg')
 # Lets choose a size for the spaceship  
 shipLength = 75
 
-# This is a function that will display our spaceship at a x and y position
+# Pausing variable
+pause = False 
+
+def thingsDodged(count):
+    """ Keeps track of things being dodged """
+    font = pygame.font.SysFont("comicsansms", 25)
+    text = font.render("Dodged:" + str(count), True, black)
+    gameDisplay.blit(text,(0,0))
+    
+def things(thingX, thingY, thingW, thingH, color):
+    """ Creates a rectangular obstacle for game """
+    pygame.draw.rect(gameDisplay, color, [thingX, thingY, thingW, thingH])
+
 def spaceShip(x,y):
+    """ This is a function that will display our spaceship at a x and y position
+"""
     gameDisplay.blit(spaceshipImg, (x,y)) 
 
-# This a function for the game loop (to keep running)
+def textObjects(text, font):
+    """ Creates the objects to draw for our screen """
+    textSurface = font.render(text, True, black)
+    return textSurface, textSurface.get_rect()
+
+def crash():
+    pygame.mixer.Sound.play(crashSound)
+    pygame.mixer.music.stop()
+    
+    largeText = pygame.font.SysFont("comicsansms", 115)
+    textSurf, textRect = textObjects("You Crashed", largeText)
+    textRect.center = ((displayWidth/2), (displayHeight/2))
+    gameDisplay.blit(textSurf, textRect)
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                
+        button("Play Again", 150, 450, 100, 50, green, brightGreen, gameLoop)
+        button("Quit", 550, 450, 100, 50, red, brightRed, quitGame)
+        
+        pygame.display.update()
+        clock.tick(15)
+        
+def button(msg, x, y, w, h, ic, ac, action=None):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    
+    if (x+w) > mouse[0] > x and y+h > mouse[1] > y: 
+        pygame.draw.rect(gameDisplay, ac, (x, y, w, h))
+        if click[0] == 1 and action != None:
+            action()
+    else:
+        pygame.draw.rect(gameDisplay, ic, (x, y, w, h))
+        smallText = pygame.font.SystFont("comicsansms", 20)
+        textSurf, textRect = textObjects(msg, smallText)
+        textRect.center = ((x+(w/2)), (y+(h/2)))
+        gameDisplay.blit(textSurf, textRect)
+        
+def quitGame():
+    pygame.quit()
+    quit()
+    
+def unPause():
+    global pause
+    pygame.mixer.music.unpause()
+    pause = False 
+    
+def paused():
+    pygame.mixer.music.pause()
+    
+    largeText = pygame.font.SysFont("comicsansms", 115)
+    textSurf, textRect = textObjects("Paused", largeText)
+    textRect.center = ((displayWidth/2), (displayHeight/2))
+    gameDisplay.blit(textSurf, textRect)
+    
+    while pause:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quitGame()
+        
+        button("Continue", 150, 450, 100, 50, green, brightGreen, unpause)
+        button("Quit", 550, 450, 100, 50, red, brightRed, quitGame)
+        
+        pygame.display.update()
+        clock.tick(15)
+
+def gameIntro():
+    intro = True
+    
+    while intro:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quitGame()
+                
+        gameDisplay.fill(white)
+        largeText = pygame.font.SysFont("comicsansms", 115)
+        textSurf, textRect = textObjects("Fasty", largeText)
+        textRect.center = ((displayWidth/2), (displayHeight/2))
+        gameDisplay.blit(textSurf, textRect)
+        
+        button("GO!", 150, 450, 100, 50, green, brightGreen, gameLoop)
+        button("Quit", 550, 450, 100, 50, red, brightRed, quitGame)
+        
+        pygame.display.update()
+        clock.tick(15)
+        
+
 def gameLoop():
+    """  This a function for the game loop (to keep running)
+"""
+    global pause
+    
+    pygame.mixer.music.load('jazz.wav')
+    pygame.mixer.music.play(-1)
+    
+    thingStartX = random.randrange(0, displayWidth)
+    thingStartY = -600
+    thingSpeed = 4
+    thingWidth = 100
+    thingHeight = 100
+    
+    thingCount =  1
+    
+    dodged = 0
     # This is the intial positioning of the sprite(the name of an image for 2D games)    
     x = (displayWidth) * 0.45
     y = (displayHeight) * 0.5 
@@ -62,43 +190,55 @@ def gameLoop():
         # Here we are checking if someone pressed the close button on our game window to quit
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                gameExit = True
-                
-            # Here we are checking to see if any buttons were pressed on keyboard to move the spaceship
-            # We do this by changing the value of the xDistanceToMove and telling the ship to go there
-            
-            # Checking the down key
+                pygame.quit()
+                quit()
+ 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    xDistanceToMove = -5
-                elif event.key == pygame.K_RIGHT:
-                    xDistanceToMove = 5
+                    x_change = -5
+                if event.key == pygame.K_RIGHT:
+                    x_change = 5
+                if event.key == pygame.K_p:
+                    pause = True
+                    paused()
                     
-            # Checking the left and right keys 
+ 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                    xDistanceToMove = 0
-        
-        # Here we are changing the x variable to the new x position so we can tell the spaceship to move there
-        x = x + xDistanceToMove
-        
-        # Here we are changing the background of the game and the spaceship at its current location        
+                    x_change = 0
+ 
+        x += x_change
         gameDisplay.fill(white)
-        spaceShip(x,y)
+ 
+        things(thingStartX, thingStartY, thingWidth, thingHeight, blockColor)
+ 
+ 
         
-        # We quit the game if spaceship goes outside screen
+        thingStartY += thingSpeed
+        spaceShip(x,y)
+        thingsDodged(dodged)
+ 
         if x > displayWidth - shipLength or x < 0:
-            gameExit = True 
-        # Here we are showing the changes to our game screen        
+            crash()
+ 
+        if thingStartY > displayHeight:
+            thingStartY = 0 - thingHeight
+            thingStartX = random.randrange(0,displayWidth)
+            dodged += 1
+            thingSpeed += 1
+            thingWidth += (dodged * 1.2)
+ 
+        if y < thingStartY+thingHeight:
+            print('y crossover')
+ 
+            if x > thingStartX and x < thingStartX + thingWidth or x+shipLength > thingStartX and x + shipLength < thingStartX+thingWidth:
+                print('x crossover')
+                crash()
+        
         pygame.display.update()
         clock.tick(60)
 
-# Lets run the game loop, we have to call the function
+gameIntro()
 gameLoop()
-
-# If we exit the loop means program ended then we close the game library
-print('Goodbye') 
-pygame.quit()
-quit()
-
-
+print("Goodbye my Friend!")
+quitGame()
