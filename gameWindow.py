@@ -26,10 +26,10 @@ displayHeight = 600
 gameDisplay = pygame.display.set_mode((displayWidth, displayHeight))
 
 # We are giving our screen a title 
-pygame.display.set_caption('Fast and Deivi')
+pygame.display.set_caption('Duck Dodger')
 
 # Crashing sound
-crashSound = pygame.mixer.Sound("crash.wav");
+# crashSound = pygame.mixer.Sound("crash.wav");
 
 # Defining some colors for use in the game
 black = (0,0,0)
@@ -44,28 +44,32 @@ blockColor = (50, 200, 250)
 clock = pygame.time.Clock()
 
 # Lets load an image for our game spaceship and for the game icon
-spaceshipImg = pygame.image.load(str(os.getcwd()) + '/racespaceship.png')
+spaceshipImg = pygame.image.load(str(os.getcwd()) + '/spaceship.jpg')
 gameIcon = pygame.image.load(str(os.getcwd()) + '/spaceshipIcon.jpg')
 # Lets choose a size for the spaceship  
-shipLength = 75
+shipLength = 25
 
 # Pausing variable
 pause = False 
 
-def thingsDodged(count):
-    """ Keeps track of things being dodged """
+def ducksDodged(count):
+    """ Keeps track of ducks being dodged """
     font = pygame.font.SysFont("comicsansms", 25)
     text = font.render("Dodged:" + str(count), True, black)
     gameDisplay.blit(text,(0,0))
     
-def things(thingX, thingY, thingW, thingH, color):
+def ducks(duckX, duckY, duckW, duckH, color):
     """ Creates a rectangular obstacle for game """
-    pygame.draw.rect(gameDisplay, color, [thingX, thingY, thingW, thingH])
+    pygame.draw.rect(gameDisplay, color, [duckX, duckY, duckW, duckH])
 
 def spaceShip(x,y):
     """ This is a function that will display our spaceship at a x and y position
 """
     gameDisplay.blit(spaceshipImg, (x,y)) 
+    
+def drawDucks(duckSize):
+   """ This function draws ducks of different sizes using shapes """
+   pass #TODO drawduck 
 
 def textObjects(text, font):
     """ Creates the objects to draw for our screen """
@@ -73,8 +77,8 @@ def textObjects(text, font):
     return textSurface, textSurface.get_rect()
 
 def crash():
-    pygame.mixer.Sound.play(crashSound)
-    pygame.mixer.music.stop()
+   # pygame.mixer.Sound.play(crashSound)
+   # pygame.mixer.music.stop()
     
     largeText = pygame.font.SysFont("comicsansms", 115)
     textSurf, textRect = textObjects("You Crashed", largeText)
@@ -103,7 +107,7 @@ def button(msg, x, y, w, h, ic, ac, action=None):
             action()
     else:
         pygame.draw.rect(gameDisplay, ic, (x, y, w, h))
-        smallText = pygame.font.SystFont("comicsansms", 20)
+        smallText = pygame.font.SysFont("comicsansms", 20)
         textSurf, textRect = textObjects(msg, smallText)
         textRect.center = ((x+(w/2)), (y+(h/2)))
         gameDisplay.blit(textSurf, textRect)
@@ -114,11 +118,11 @@ def quitGame():
     
 def unPause():
     global pause
-    pygame.mixer.music.unpause()
+    # pygame.mixer.music.unpause()
     pause = False 
     
 def paused():
-    pygame.mixer.music.pause()
+    # pygame.mixer.music.pause()
     
     largeText = pygame.font.SysFont("comicsansms", 115)
     textSurf, textRect = textObjects("Paused", largeText)
@@ -146,7 +150,7 @@ def gameIntro():
                 
         gameDisplay.fill(white)
         largeText = pygame.font.SysFont("comicsansms", 115)
-        textSurf, textRect = textObjects("Fasty", largeText)
+        textSurf, textRect = textObjects("Duck Dodger", largeText)
         textRect.center = ((displayWidth/2), (displayHeight/2))
         gameDisplay.blit(textSurf, textRect)
         
@@ -162,16 +166,16 @@ def gameLoop():
 """
     global pause
     
-    pygame.mixer.music.load('jazz.wav')
-    pygame.mixer.music.play(-1)
+    # pygame.mixer.music.load('jazz.wav')
+    # pygame.mixer.music.play(-1)
     
-    thingStartX = random.randrange(0, displayWidth)
-    thingStartY = -600
-    thingSpeed = 4
-    thingWidth = 100
-    thingHeight = 100
+    duckStartX = random.randrange(0, displayWidth)
+    duckStartY = -600
+    duckSpeed = 4
+    duckWidth = 50
+    duckHeight = 50
     
-    thingCount =  1
+    duckCount =  1
     
     dodged = 0
     # This is the intial positioning of the sprite(the name of an image for 2D games)    
@@ -184,6 +188,7 @@ def gameLoop():
     # This the distance traveled and the speed 
     xDistanceToMove = 0
     shipSpeed = 0 
+    x_change = 0 
 
     while not gameExit:
         
@@ -210,28 +215,28 @@ def gameLoop():
         x += x_change
         gameDisplay.fill(white)
  
-        things(thingStartX, thingStartY, thingWidth, thingHeight, blockColor)
+        ducks(duckStartX, duckStartY, duckWidth, duckHeight, blockColor)
  
  
         
-        thingStartY += thingSpeed
+        duckStartY += duckSpeed
         spaceShip(x,y)
-        thingsDodged(dodged)
+        ducksDodged(dodged)
  
         if x > displayWidth - shipLength or x < 0:
             crash()
  
-        if thingStartY > displayHeight:
-            thingStartY = 0 - thingHeight
-            thingStartX = random.randrange(0,displayWidth)
+        if duckStartY > displayHeight:
+            duckStartY = 0 - duckHeight
+            duckStartX = random.randrange(0,displayWidth)
             dodged += 1
-            thingSpeed += 1
-            thingWidth += (dodged * 1.2)
+            duckSpeed += 1
+            duckWidth += (dodged * 1.2)
  
-        if y < thingStartY+thingHeight:
+        if y < duckStartY+duckHeight:
             print('y crossover')
  
-            if x > thingStartX and x < thingStartX + thingWidth or x+shipLength > thingStartX and x + shipLength < thingStartX+thingWidth:
+            if x > duckStartX and x < duckStartX + duckWidth or x+shipLength > duckStartX and x + shipLength < duckStartX+duckWidth:
                 print('x crossover')
                 crash()
         
